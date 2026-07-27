@@ -44,6 +44,7 @@ if current_state != previous_state:
         send_whatsapp("🔴 Il PC di casa risulta OFFLINE (non raggiungibile su Tailscale).")
     else:
         send_whatsapp("✅ Il PC di casa è tornato ONLINE.")
-    write_state(current_state)
 else:
     print("Nessun cambio di stato, nessuna notifica inviata.")
+
+write_state(current_state)
