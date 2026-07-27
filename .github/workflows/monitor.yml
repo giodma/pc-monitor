@@ -1,0 +1,43 @@
+name: Monitor PC
+
+on:
+  schedule:
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Connetti a Tailscale
+        uses: tailscale/github-action@v2
+        with:
+          authkey: ${{ secrets.TS_AUTHKEY }}
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Installa dipendenze
+        run: pip install -r requirements.txt
+
+      - name: Controlla PC e notifica se serve
+        env:
+          TARGET_IP: ${{ secrets.TARGET_IP }}
+          PHONE: ${{ secrets.PHONE }}
+          APIKEY: ${{ secrets.CALLMEBOT_APIKEY }}
+        run: python3 check_pc.py
+
+      - name: Salva stato nel repo
+        run: |
+          git config user.name "pc-monitor-bot"
+          git config user.email "actions@github.com"
+          git add state.txt
+          git diff --staged --quiet || git commit -m "aggiorna stato"
+          git push
